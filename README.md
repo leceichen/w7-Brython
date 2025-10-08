@@ -2,8 +2,7 @@
 
 #
 EXAMPLES
-
-機器人行走模擬程式python and brython 程式
+機器人行走模擬程式 python and brython 程式
 
 
 
