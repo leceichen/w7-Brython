@@ -1,5 +1,5 @@
 ```python
-from browser import document, html, timer
+<from browser import document, html, timer
 
 CELL_SIZE = 40
 WALL_THICKNESS = 6
@@ -215,4 +215,4 @@ r.move(2)
 r.turn_left()
 r.move(1)
 r.turn_left()
-r.move(1)
+r.move(1) >
