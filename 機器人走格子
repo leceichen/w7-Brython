@@ -1,3 +1,4 @@
+```python
 from browser import document, html, timer
 
 CELL_SIZE = 40
