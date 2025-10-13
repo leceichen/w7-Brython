@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>機器人行走模擬（Brython）</title>
+  <style>
+    body{font-family:system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans CJK TC', sans-serif; padding:12px; background:#f7f9fc}
+    #controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+    button, select, input[type=range]{padding:6px;border-radius:6px;border:1px solid #ccc}
+    canvas{background:#ffffff;border:1px solid #ddd;display:block;max-width:100%;height:auto}
+    .legend{margin-top:8px}
+    .card{background:white;border-radius:10px;padding:12px;box-shadow:0 6px 18px rgba(20,30,60,0.06)}
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/brython@3.10.12/brython.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/brython@3.10.12/brython_stdlib.js"></script>
+</head>
+<body onload="brython()">
+  <div class="card">
+    <h1>機器人行走模擬（Brython）</h1>
+    <div id="controls">
+      <button id="step">單步</button>
+      <button id="run">開始</button>
+      <button id="pause">暫停</button>
+      <button id="reset">重設</button>
+      <button id="randobs">隨機障礙</button>
+      <label>速度 <input id="speed" type="range" min="50" max="1000" step="50" value="300"></label>
+      <label>網格 <select id="gridSize"><option value="10">10x10</option><option value="16" selected>16x16</option><option value="20">20x20</option></select></label>
+      <label>步長 <select id="stepSize"><option value="1" selected>1</option><option value="2">2</option></select></label>
+    </div>
+    <canvas id="canvas" width="640" height="640"></canvas>
+    <div class="legend">控制鍵：↑ 前進、↓ 後退、← 左轉、→ 右轉</div>
+    <p style="margin-top:10px;color:#555">提示：將檔案命名為 <code>index.html</code> 並放到 GitHub repository 的 root，啟用 GitHub Pages 後即可直接用網址開啟。</p>
+  </div>
+
+  <script type="text/python">
+from browser import document, timer
+import math, random
+
+canvas = document['canvas']
+ctx = canvas.getContext('2d')
+
+class Robot:
+    def __init__(self, x, y, angle=0):
+        self.x = x
+        self.y = y
+        self.angle = angle
+
+class World:
+    def __init__(self, rows=16, cols=16):
+        self.rows = rows
+        self.cols = cols
+        self.grid = [[0 for _ in range(cols)] for __ in range(rows)]
+
+    def random_obstacles(self, density=0.12):
+        for r in range(self.rows):
+            for c in range(self.cols):
+                self.grid[r][c] = 1 if random.random() < density else 0
+
+    def clear(self):
+        self.grid = [[0 for _ in range(self.cols)] for __ in range(self.rows)]
+
+grid_size_select = document['gridSize']
+step_size_select = document['stepSize']
+speed_input = document['speed']
+
+CELL = 40
+padding = 2
+
+world = World(rows=int(grid_size_select.value), cols=int(grid_size_select.value))
+robot = Robot(x=1, y=1, angle=0)
+
+running = False
+interval_id = None
+
+def resize_canvas():
+    n = world.rows
+    canvas.width = canvas.height = n * CELL
+
+def draw():
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    for r in range(world.rows):
+        for c in range(world.cols):
+            x = c*CELL
+            y = r*CELL
+            ctx.beginPath()
+            ctx.rect(x+padding, y+padding, CELL-2*padding, CELL-2*padding)
+            if world.grid[r][c] == 1:
+                ctx.fillStyle = '#444'
+                ctx.fill()
+            else:
+                ctx.fillStyle = '#fff'
+                ctx.fill()
+            ctx.strokeStyle = '#ddd'
+            ctx.stroke()
+    draw_robot()
+
+def grid_to_pixel(cx, cy):
+    return cx*CELL + CELL/2, cy*CELL + CELL/2
+
+def draw_robot():
+    px, py = grid_to_pixel(robot.x, robot.y)
+    r = CELL*0.35
+    a = robot.angle
+    p1 = (px + r*math.cos(a), py + r*math.sin(a))
+    p2 = (px + r*math.cos(a + 2.2), py + r*math.sin(a + 2.2))
+    p3 = (px + r*math.cos(a - 2.2), py + r*math.sin(a - 2.2))
+    ctx.beginPath()
+    ctx.moveTo(p1[0], p1[1])
+    ctx.lineTo(p2[0], p2[1])
+    ctx.lineTo(p3[0], p3[1])
+    ctx.closePath()
+    ctx.fillStyle = '#1e88e5'
+    ctx.fill()
+    ctx.strokeStyle = '#0d47a1'
+    ctx.stroke()
+
+def can_move_to(x, y):
+    if x < 0 or y < 0 or x >= world.cols or y >= world.rows:
+        return False
+    return world.grid[y][x] == 0
+
+def move_forward(steps=1):
+    dx = round(math.cos(robot.angle))
+    dy = round(math.sin(robot.angle))
+    for _ in range(steps):
+        nx = robot.x + dx
+        ny = robot.y + dy
+        if can_move_to(nx, ny):
+            robot.x = nx
+            robot.y = ny
+        else:
+            break
+
+def move_backward(steps=1):
+    dx = round(math.cos(robot.angle))
+    dy = round(math.sin(robot.angle))
+    for _ in range(steps):
+        nx = robot.x - dx
+        ny = robot.y - dy
+        if can_move_to(nx, ny):
+            robot.x = nx
+            robot.y = ny
+        else:
+            break
+
+def turn_left():
+    robot.angle -= math.pi/2
+
+def turn_right():
+    robot.angle += math.pi/2
+
+def step_callback(ev=None):
+    s = int(step_size_select.value)
+    move_forward(s)
+    draw()
+
+def run_loop():
+    s = int(step_size_select.value)
+    move_forward(s)
+    draw()
+
+def start_run(ev=None):
+    global running, interval_id
+    if running:
+        return
+    running = True
+    ms = int(speed_input.value)
+    interval_id = timer.set_interval(run_loop, ms)
+
+def pause_run(ev=None):
+    global running, interval_id
+    if not running:
+        return
+    running = False
+    if interval_id:
+        timer.clear_interval(interval_id)
+        interval_id = None
+
+def reset(ev=None):
+    pause_run()
+    world.clear()
+    robot.x, robot.y = 1, 1
+    robot.angle = 0
+    draw()
+
+def randobs(ev=None):
+    world.random_obstacles(density=0.16)
+    if robot.y < world.rows and robot.x < world.cols:
+        world.grid[robot.y][robot.x] = 0
+    draw()
+
+def keydown(ev):
+    k = ev.key
+    if k == 'ArrowUp':
+        move_forward(int(step_size_select.value))
+    elif k == 'ArrowDown':
+        move_backward(int(step_size_select.value))
+    elif k == 'ArrowLeft':
+        turn_left()
+    elif k == 'ArrowRight':
+        turn_right()
+    draw()
+
+document['step'].bind('click', step_callback)
+document['run'].bind('click', start_run)
+document['pause'].bind('click', pause_run)
+document['reset'].bind('click', reset)
+document['randobs'].bind('click', randobs)
+document.bind('keydown', keydown)
+
+def grid_change(ev):
+    rows = int(grid_size_select.value)
+    world.__init__(rows=rows, cols=rows)
+    resize_canvas()
+    reset()
+
+grid_size_select.bind('change', grid_change)
+
+resize_canvas()
+world.clear()
+robot.x = 1
+robot.y = 1
+robot.angle = 0
+randobs()
+draw()
+  </script>
+
+</body>
+</html>
