@@ -1,0 +1,110 @@
+from browser import document, html, timer
+
+CELL_SIZE = 30
+IMG_PATH = "https://mde.tw/cp2025/reeborg/src/images/"
+
+class World:
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+        self.occupied = set()
+        self.canvas = html.CANVAS(width=width*CELL_SIZE, height=height*CELL_SIZE)
+        self.ctx = self.canvas.getContext("2d")
+        self.init_html()
+        self.draw_grid()
+
+    def init_html(self):
+        document["brython_div1"].clear()
+        document["brython_div1"] <= self.canvas
+
+    def draw_grid(self):
+        ctx = self.ctx
+        ctx.strokeStyle = "#ccc"
+        for i in range(self.width + 1):
+            ctx.beginPath()
+            ctx.moveTo(i*CELL_SIZE, 0)
+            ctx.lineTo(i*CELL_SIZE, self.height*CELL_SIZE)
+            ctx.stroke()
+        for j in range(self.height + 1):
+            ctx.beginPath()
+            ctx.moveTo(0, j*CELL_SIZE)
+            ctx.lineTo(self.width*CELL_SIZE, j*CELL_SIZE)
+            ctx.stroke()
+
+    def draw_robot(self, x, y, color="blue"):
+        ctx = self.ctx
+        ctx.fillStyle = color
+        ctx.fillRect(x*CELL_SIZE+2, y*CELL_SIZE+2, CELL_SIZE-4, CELL_SIZE-4)
+        self.occupied.add((x,y))
+
+class AnimatedRobot:
+    def __init__(self, world, x, y, color="blue"):
+        self.world = world
+        self.x = x
+        self.y = y
+        self.color = color
+        self.queue = []
+        self.running = False
+        self.world.draw_robot(self.x, self.y, self.color)
+
+    def enqueue(self, action):
+        self.queue.append(action)
+        self.run_queue()
+
+    def run_queue(self):
+        if self.running or not self.queue:
+            return
+        self.running = True
+        action = self.queue.pop(0)
+        action(lambda: self.finish_step())
+
+    def finish_step(self):
+        self.running = False
+        self.run_queue()
+
+    def move_one(self, dx, dy, done):
+        nx, ny = self.x + dx, self.y + dy
+        if (nx, ny) not in self.world.occupied and 0 <= nx < self.world.width and 0 <= ny < self.world.height:
+            self.x, self.y = nx, ny
+            self.world.draw_robot(self.x, self.y, self.color)
+        timer.set_timeout(done, 50)
+
+    def move_path(self, moves):
+        for dx, dy in moves:
+            self.enqueue(lambda done, dx=dx, dy=dy: self.move_one(dx, dy, done))
+
+# 產生三台 robot
+w = World(20, 20)
+r1 = AnimatedRobot(w, 0, 0, "red")
+r2 = AnimatedRobot(w, 0, 7, "green")
+r3 = AnimatedRobot(w, 0, 14, "blue")
+
+# 產生蛇形遍歷座標
+def snake_path(start_x, start_y, width, height):
+    path = []
+    for y in range(start_y, start_y + height):
+        row = list(range(start_x, start_x + width))
+        if y % 2 != start_y % 2:
+            row.reverse()
+        for x in row:
+            path.append((x - start_x, y - start_y))
+    return path
+
+# 將 20x20 分成三個橫條，每台 robot 一條
+paths = []
+paths.append(snake_path(0, 0, 20, 7))
+paths.append(snake_path(0, 7, 20, 7))
+paths.append(snake_path(0, 14, 20, 6))
+
+# 將座標轉為 dx, dy
+def path_to_moves(path):
+    moves = []
+    for i in range(1, len(path)):
+        x0, y0 = path[i-1]
+        x1, y1 = path[i]
+        moves.append((x1 - x0, y1 - y0))
+    return moves
+
+r1.move_path(path_to_moves(paths[0]))
+r2.move_path(path_to_moves(paths[1]))
+r3.move_path(path_to_moves(paths[2]))
