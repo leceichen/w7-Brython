@@ -1,3 +1,13 @@
+<!--
+File: robot_walk_simulation.html
+Contains a Brython-based robot walking simulation (single-file).
+Below the HTML there's also a complete Python (Pygame) script included in a code block for desktop use.
+
+Instructions:
+- For the Brython demo: open this HTML file in a modern browser (double-click). It uses the Brython CDN.
+- For the Pygame script: save the Python code below to robot_walk_simulation.py and run `python3 robot_walk_simulation.py` (requires `pygame`)
+-->
+
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
