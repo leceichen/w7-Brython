@@ -1,15 +1,374 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>三個機器人協同覆蓋20x20網格模擬</title>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft JhengHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #2c3e50;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            color: #5d6d7e;
+        }
+
+        /* 進度條樣式 */
+        .progress-container {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 25px;
+            background: #ecf0f1;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 12px;
+            border: 2px solid #d5dbdb;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #2ecc71, #27ae60);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            width: 0%;
+            box-shadow: inset 0 2px 5px rgba(255,255,255,0.3);
+        }
+
+        .progress-text {
+            text-align: center;
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 1.1rem;
+        }
+
+        /* 統計卡片 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            border-left: 6px solid;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .robot1 { border-color: #3498db; }
+        .robot2 { border-color: #e74c3c; }
+        .robot3 { border-color: #2ecc71; }
+
+        .robot-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .robot-color {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            margin-right: 12px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+        }
+
+        .robot-color.blue { background: #3498db; }
+        .robot-color.red { background: #e74c3c; }
+        .robot-color.green { background: #2ecc71; }
+
+        .robot-header h3 {
+            color: #2c3e50;
+            font-size: 1.4rem;
+        }
+
+        .robot-info {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f1f2f6;
+        }
+
+        .label {
+            font-weight: 600;
+            color: #7f8c8d;
+        }
+
+        .value {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 1.1rem;
+        }
+
+        /* 控制面板 */
+        .controls {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+        }
+
+        .control-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .speed-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* 按鈕樣式 */
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+        }
+
+        .btn:active {
+            transform: translateY(-1px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #95a5a6, #7f8c8d);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(45deg, #f39c12, #e67e22);
+            color: white;
+        }
+
+        .btn-info {
+            background: linear-gradient(45deg, #1abc9c, #16a085);
+            color: white;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #3498db;
+            color: #3498db;
+        }
+
+        .speed-display {
+            font-weight: 600;
+            color: #2c3e50;
+            min-width: 120px;
+            text-align: center;
+            font-size: 1.1rem;
+            background: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        /* 模擬容器 */
+        .simulation-container {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .canvas-wrapper {
+            border: 4px solid #2c3e50;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            background: #2c3e50;
+        }
+
+        /* 圖例 */
+        footer {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 2px solid #ecf0f1;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 1.1rem;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.8);
+            border-radius: 25px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .color-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .color-dot.blue { background: #3498db; }
+        .color-dot.red { background: #e74c3c; }
+        .color-dot.green { background: #2ecc71; }
+
+        .icon {
+            font-size: 1.2rem;
+        }
+
+        /* 響應式設計 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .control-group {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 250px;
+                justify-content: center;
+            }
+            
+            .legend {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .speed-controls {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+
+        /* 動畫效果 */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.8s ease-out;
+        }
+    </style>
     <script src="https://cdn.jsdelivr.net/npm/brython@3/brython.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/brython@3/brython_stdlib.js"></script>
 </head>
 <body onload="brython()">
-    <div class="container">
+    <div class="container fade-in">
         <header>
             <h1>🤖 三個機器人協同覆蓋20x20網格模擬</h1>
             <p class="subtitle">觀看三個機器人如何高效協作覆蓋整個網格世界</p>
@@ -45,7 +404,7 @@
                     </div>
                     <div class="info-item">
                         <span class="label">狀態:</span>
-                        <span id="status1" class="value">移動中</span>
+                        <span id="status1" class="value">準備中</span>
                     </div>
                 </div>
             </div>
@@ -70,7 +429,7 @@
                     </div>
                     <div class="info-item">
                         <span class="label">狀態:</span>
-                        <span id="status2" class="value">移動中</span>
+                        <span id="status2" class="value">準備中</span>
                     </div>
                 </div>
             </div>
@@ -95,7 +454,7 @@
                     </div>
                     <div class="info-item">
                         <span class="label">狀態:</span>
-                        <span id="status3" class="value">移動中</span>
+                        <span id="status3" class="value">準備中</span>
                     </div>
                 </div>
             </div>
@@ -145,6 +504,327 @@
         </footer>
     </div>
 
-    <script type="text/python" src="assets/js/script.js"></script>
+    <script type="text/python">
+from browser import document, html, timer
+import random
+
+# 網格設定
+GRID_SIZE = 20
+CELL_SIZE = 25
+CANVAS_SIZE = GRID_SIZE * CELL_SIZE
+
+# 創建畫布
+canvas = html.CANVAS(width=CANVAS_SIZE, height=CANVAS_SIZE, style="background: #2c3e50;")
+brython_div = document["brython_div1"]
+brython_div <= canvas
+ctx = canvas.getContext("2d")
+
+# 全局變量
+visited = [[False for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
+total_cells = GRID_SIZE * GRID_SIZE
+covered_cells = 0
+speed = 150  # 毫秒
+is_running = False
+simulation_interval = None
+
+class Robot:
+    def __init__(self, start_x, start_y, color, robot_id):
+        self.x = start_x
+        self.y = start_y
+        self.color = color
+        self.id = robot_id
+        self.covered = 0
+        self.direction = 0  # 0:右, 1:下, 2:左, 3:上
+        self.target_x = start_x
+        self.target_y = start_y
+        self.is_moving = False
+        self.move_progress = 0
+        self.completed = False
+        self.assigned_area = self.calculate_assigned_area()
+        
+        # 標記起始位置為已訪問
+        self.mark_visited(start_x, start_y)
+        self.update_display()
+    
+    def calculate_assigned_area(self):
+        # 為每個機器人分配不同的區域
+        if self.id == 1:  # 藍色 - 左側區域
+            return [(x, y) for x in range(GRID_SIZE) for y in range(GRID_SIZE) if x < GRID_SIZE // 2]
+        elif self.id == 2:  # 紅色 - 右側區域
+            return [(x, y) for x in range(GRID_SIZE) for y in range(GRID_SIZE) if x >= GRID_SIZE // 2]
+        else:  # 綠色 - 中間區域和協助其他區域
+            return [(x, y) for x in range(GRID_SIZE) for y in range(GRID_SIZE)]
+    
+    def mark_visited(self, x, y):
+        global covered_cells
+        if not visited[y][x]:
+            visited[y][x] = True
+            covered_cells += 1
+            self.covered += 1
+            self.draw_trace(x, y)
+            self.update_display()
+            update_progress()
+    
+    def draw_trace(self, x, y):
+        # 繪製軌跡點
+        ctx.fillStyle = self.color
+        ctx.beginPath()
+        ctx.arc(x * CELL_SIZE + CELL_SIZE//2, 
+                y * CELL_SIZE + CELL_SIZE//2, 2, 0, 6.28)
+        ctx.fill()
+    
+    def find_next_target(self):
+        if self.completed:
+            return None
+            
+        # 優先在自己的分配區域內尋找未訪問的格子
+        unvisited_in_area = [(x, y) for x, y in self.assigned_area if not visited[y][x]]
+        if unvisited_in_area:
+            # 找最近的未訪問格子
+            return min(unvisited_in_area, key=lambda pos: abs(pos[0]-self.x) + abs(pos[1]-self.y))
+        
+        # 如果自己的區域已完成，協助其他區域
+        all_unvisited = [(x, y) for x in range(GRID_SIZE) for y in range(GRID_SIZE) if not visited[y][x]]
+        if all_unvisited:
+            return min(all_unvisited, key=lambda pos: abs(pos[0]-self.x) + abs(pos[1]-self.y))
+        
+        self.completed = True
+        document[f"status{self.id}"].text = "已完成"
+        return None
+    
+    def calculate_direction(self, target_x, target_y):
+        dx = target_x - self.x
+        dy = target_y - self.y
+        
+        if abs(dx) > abs(dy):
+            return 0 if dx > 0 else 2  # 右或左
+        else:
+            return 1 if dy > 0 else 3  # 下或上
+    
+    def move_towards_target(self):
+        if not self.is_moving and not self.completed:
+            target = self.find_next_target()
+            if target is None:
+                return False
+            
+            self.target_x, self.target_y = target
+            self.direction = self.calculate_direction(self.target_x, self.target_y)
+            self.is_moving = True
+            self.move_progress = 0
+            document[f"status{self.id}"].text = "移動中"
+        
+        if self.is_moving:
+            # 平滑移動動畫
+            self.move_progress += 0.15
+            if self.move_progress >= 1:
+                self.x = self.target_x
+                self.y = self.target_y
+                self.is_moving = False
+                self.mark_visited(self.x, self.y)
+                return True
+        
+        return True
+    
+    def get_display_position(self):
+        if self.is_moving:
+            progress = self.move_progress
+            current_x = self.x + (self.target_x - self.x) * progress
+            current_y = self.y + (self.target_y - self.y) * progress
+            return current_x, current_y
+        return self.x, self.y
+    
+    def draw(self):
+        current_x, current_y = self.get_display_position()
+        
+        # 繪製機器人本體
+        ctx.fillStyle = self.color
+        ctx.beginPath()
+        ctx.arc(current_x * CELL_SIZE + CELL_SIZE//2, 
+                current_y * CELL_SIZE + CELL_SIZE//2, 8, 0, 6.28)
+        ctx.fill()
+        
+        # 繪製方向指示器
+        ctx.fillStyle = "white"
+        directions = [
+            (CELL_SIZE//2 + 5, CELL_SIZE//2),  # 右
+            (CELL_SIZE//2, CELL_SIZE//2 + 5),  # 下
+            (CELL_SIZE//2 - 5, CELL_SIZE//2),  # 左
+            (CELL_SIZE//2, CELL_SIZE//2 - 5)   # 上
+        ]
+        dx, dy = directions[self.direction]
+        ctx.beginPath()
+        ctx.arc(current_x * CELL_SIZE + dx, 
+                current_y * CELL_SIZE + dy, 2, 0, 6.28)
+        ctx.fill()
+        
+        # 繪製機器人ID
+        ctx.fillStyle = "white"
+        ctx.font = "bold 10px Arial"
+        ctx.textAlign = "center"
+        ctx.fillText(str(self.id), 
+                    current_x * CELL_SIZE + CELL_SIZE//2, 
+                    current_y * CELL_SIZE + CELL_SIZE//2 + 3)
+    
+    def update_display(self):
+        document[f"pos{self.id}"].text = f"({self.x}, {self.y})"
+        document[f"covered{self.id}"].text = f"{self.covered} 格"
+        direction_symbols = ["→", "↓", "←", "↑"]
+        document[f"dir{self.id}"].text = direction_symbols[self.direction]
+
+def draw_grid():
+    ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE)
+    
+    # 繪製已訪問的格子背景
+    for y in range(GRID_SIZE):
+        for x in range(GRID_SIZE):
+            if visited[y][x]:
+                ctx.fillStyle = "#34495e"
+                ctx.fillRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+    
+    # 繪製網格線
+    ctx.strokeStyle = "#2c3e50"
+    ctx.lineWidth = 1
+    for i in range(0, CANVAS_SIZE + 1, CELL_SIZE):
+        ctx.beginPath()
+        ctx.moveTo(i, 0)
+        ctx.lineTo(i, CANVAS_SIZE)
+        ctx.stroke()
+        ctx.beginPath()
+        ctx.moveTo(0, i)
+        ctx.lineTo(CANVAS_SIZE, i)
+        ctx.stroke()
+
+def update_progress():
+    progress = (covered_cells / total_cells) * 100
+    document["progressFill"].style.width = f"{progress}%"
+    document["progressText"].text = f"{progress:.1f}% 已完成 ({covered_cells}/{total_cells} 格)"
+
+# 創建機器人
+robots = [
+    Robot(0, 0, "#3498db", 1),           # 藍色 - 左上角
+    Robot(GRID_SIZE-1, 0, "#e74c3c", 2), # 紅色 - 右上角
+    Robot(GRID_SIZE//2, GRID_SIZE//2, "#2ecc71", 3)  # 綠色 - 中心
+]
+
+def draw_all():
+    draw_grid()
+    for robot in robots:
+        robot.draw()
+
+def move_all():
+    all_done = True
+    for robot in robots:
+        if robot.move_towards_target():
+            all_done = False
+    
+    draw_all()
+    
+    if all_done and all(robot.completed for robot in robots):
+        pause_simulation()
+        document["progressText"].text = "🎉 完成！所有格子已被覆蓋"
+        for i in range(1, 4):
+            document[f"status{i}"].text = "已完成"
+
+def start_simulation(ev=None):
+    global is_running, simulation_interval
+    if not is_running:
+        is_running = True
+        document["startBtn"].disabled = True
+        document["pauseBtn"].disabled = False
+        for i in range(1, 4):
+            document[f"status{i}"].text = "移動中"
+        simulation_interval = timer.set_interval(move_all, speed)
+
+def pause_simulation(ev=None):
+    global is_running
+    if is_running:
+        is_running = False
+        document["startBtn"].disabled = False
+        document["pauseBtn"].disabled = True
+        if simulation_interval:
+            timer.clear_interval(simulation_interval)
+
+def reset_simulation(ev=None):
+    global visited, covered_cells, is_running
+    
+    pause_simulation()
+    
+    # 重置訪問狀態
+    visited = [[False for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
+    covered_cells = 0
+    
+    # 重置機器人
+    for i, robot in enumerate(robots):
+        if i == 0:
+            robot.x, robot.y = 0, 0
+        elif i == 1:
+            robot.x, robot.y = GRID_SIZE-1, 0
+        else:
+            robot.x, robot.y = GRID_SIZE//2, GRID_SIZE//2
+        
+        robot.covered = 0
+        robot.direction = 0
+        robot.target_x = robot.x
+        robot.target_y = robot.y
+        robot.is_moving = False
+        robot.move_progress = 0
+        robot.completed = False
+        robot.mark_visited(robot.x, robot.y)
+        robot.update_display()
+    
+    update_progress()
+    draw_all()
+    
+    for i in range(1, 4):
+        document[f"status{i}"].text = "準備中"
+
+def clear_traces(ev=None):
+    # 清除所有軌跡，但保留已訪問狀態
+    draw_grid()
+    for robot in robots:
+        robot.draw()
+
+def change_speed(delta):
+    global speed, simulation_interval, is_running
+    
+    new_speed = max(50, min(500, speed + delta))
+    if new_speed != speed:
+        speed = new_speed
+        
+        # 更新速度顯示
+        if speed <= 80:
+            speed_text = "極快"
+        elif speed <= 150:
+            speed_text = "快速"
+        elif speed <= 250:
+            speed_text = "正常"
+        elif speed <= 350:
+            speed_text = "慢速"
+        else:
+            speed_text = "極慢"
+        document["speedDisplay"].text = f"速度: {speed_text}"
+        
+        # 如果正在運行，重新設置定時器
+        if is_running:
+            pause_simulation()
+            start_simulation()
+
+def speed_up(ev=None):
+    change_speed(-70)
+
+def speed_down(ev=None):
+    change_speed(70)
+
+# 綁定事件
+document["startBtn"].bind("click", start_simulation)
+document["pauseBtn"].bind("click", pause_simulation)
+document["resetBtn"].bind("click", reset_simulation)
+document["clearTracesBtn"].bind("click", clear_traces)
+document["speedUpBtn"].bind("click", speed_up)
+document["speedDownBtn"].bind("click", speed_down)
+
+# 初始繪製和設置
+reset_simulation()
+    </script>
 </body>
 </html>
