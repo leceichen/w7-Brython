@@ -12,5 +12,5 @@ iframe 在 GitHub Markdown 中被限制。
 可靠做法是提供 GitHub Pages 網址鏈接。
 
 ## 模擬器展示
- 點擊 [此處打開模擬器]( )。
+ 點擊 [此處打開模擬器](https://leceichen.github.io/w7-Brython-/ )。
 
