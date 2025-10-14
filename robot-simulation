@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>三個機器人協同覆蓋20x20網格模擬</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/brython@3/brython.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/brython@3/brython_stdlib.js"></script>
+</head>
+<body onload="brython()">
+    <div class="container">
+        <header>
+            <h1>🤖 三個機器人協同覆蓋20x20網格模擬</h1>
+            <p class="subtitle">觀看三個機器人如何高效協作覆蓋整個網格世界</p>
+        </header>
+
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div id="progressFill" class="progress-fill"></div>
+            </div>
+            <div class="progress-text">
+                <span id="progressText">0% 已完成 (0/400 格)</span>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card robot1">
+                <div class="robot-header">
+                    <div class="robot-color blue"></div>
+                    <h3>藍色機器人</h3>
+                </div>
+                <div class="robot-info">
+                    <div class="info-item">
+                        <span class="label">位置:</span>
+                        <span id="pos1" class="value">(0, 0)</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">已覆蓋:</span>
+                        <span id="covered1" class="value">0 格</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">方向:</span>
+                        <span id="dir1" class="value">→</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">狀態:</span>
+                        <span id="status1" class="value">移動中</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card robot2">
+                <div class="robot-header">
+                    <div class="robot-color red"></div>
+                    <h3>紅色機器人</h3>
+                </div>
+                <div class="robot-info">
+                    <div class="info-item">
+                        <span class="label">位置:</span>
+                        <span id="pos2" class="value">(0, 0)</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">已覆蓋:</span>
+                        <span id="covered2" class="value">0 格</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">方向:</span>
+                        <span id="dir2" class="value">→</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">狀態:</span>
+                        <span id="status2" class="value">移動中</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card robot3">
+                <div class="robot-header">
+                    <div class="robot-color green"></div>
+                    <h3>綠色機器人</h3>
+                </div>
+                <div class="robot-info">
+                    <div class="info-item">
+                        <span class="label">位置:</span>
+                        <span id="pos3" class="value">(0, 0)</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">已覆蓋:</span>
+                        <span id="covered3" class="value">0 格</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">方向:</span>
+                        <span id="dir3" class="value">→</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">狀態:</span>
+                        <span id="status3" class="value">移動中</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <button id="startBtn" class="btn btn-primary">
+                    <span class="icon">▶️</span>開始模擬
+                </button>
+                <button id="pauseBtn" class="btn btn-secondary" disabled>
+                    <span class="icon">⏸️</span>暫停
+                </button>
+                <button id="resetBtn" class="btn btn-warning">
+                    <span class="icon">🔄</span>重置
+                </button>
+                <button id="clearTracesBtn" class="btn btn-info">
+                    <span class="icon">🧹</span>清除軌跡
+                </button>
+            </div>
+            <div class="speed-controls">
+                <button id="speedDownBtn" class="btn btn-outline">🐢 減速</button>
+                <span id="speedDisplay" class="speed-display">速度: 正常</span>
+                <button id="speedUpBtn" class="btn btn-outline">🐇 加速</button>
+            </div>
+        </div>
+
+        <div class="simulation-container">
+            <div id="brython_div1" class="canvas-wrapper"></div>
+        </div>
+
+        <footer>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="color-dot blue"></div>
+                    <span>藍色機器人 - 左側區域</span>
+                </div>
+                <div class="legend-item">
+                    <div class="color-dot red"></div>
+                    <span>紅色機器人 - 右側區域</span>
+                </div>
+                <div class="legend-item">
+                    <div class="color-dot green"></div>
+                    <span>綠色機器人 - 機動支援</span>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script type="text/python" src="assets/js/script.js"></script>
+</body>
+</html>
