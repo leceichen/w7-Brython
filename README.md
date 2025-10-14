@@ -1,5 +1,7 @@
 # Brython
 
+<img width="792" height="349" alt="image" src="https://github.com/user-attachments/assets/3dde9a90-531e-4e5a-a85e-1321e24221e8" />
+
 Brython 是一個將 Python 語法編譯為 JavaScript 的工具，能直接在瀏覽器中以 Python 撰寫前端網頁程式。
 
 # 注意
