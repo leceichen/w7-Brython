@@ -18,6 +18,7 @@ GitHub Pages 建立和規則 https://docs.github.com/en/pages/quickstart
 
 多機器人蛇形路徑模擬
 <img width="762" height="914" alt="image" src="https://github.com/user-attachments/assets/da432437-81ca-4fc6-8511-5c277be04a56" />
+ ##  點擊 [此處打開模擬器](https://leceichen.github.io/w7-Brython-/ )
 
 程式與應用
 
@@ -48,5 +49,5 @@ GitHub Pages 建立和規則 https://docs.github.com/en/pages/quickstart
 - 跨平台兼容 - 支援所有現代瀏覽器，具備良好的設備適應性
   
 
- ##  點擊 [此處打開模擬器](https://leceichen.github.io/w7-Brython-/ )
+
 
