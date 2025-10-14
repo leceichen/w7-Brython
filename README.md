@@ -1,7 +1,6 @@
 # Brython
 
 Brython 是一個將 Python 語法編譯為 JavaScript 的工具，能直接在瀏覽器中以 Python 撰寫前端網頁程式。
-#
 
 # 注意
 
@@ -12,6 +11,7 @@ iframe 在 GitHub Markdown 中被限制。
 可靠做法是提供 GitHub Pages 網址鏈接。
 
 ## 模擬器展示
+
 多機器人蛇形路徑模擬
 <img width="762" height="914" alt="image" src="https://github.com/user-attachments/assets/da432437-81ca-4fc6-8511-5c277be04a56" />
 
