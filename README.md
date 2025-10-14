@@ -10,7 +10,7 @@ iframe 在 GitHub Markdown 中被限制
 
 可靠做法是提供 GitHub Pages 網址鏈接
 
-GitHub Pages 規則 https://docs.github.com/en/pages/quickstart
+GitHub Pages 建立和規則 https://docs.github.com/en/pages/quickstart
 
 ## 模擬器展示
 
