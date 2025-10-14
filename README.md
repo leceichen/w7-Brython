@@ -6,7 +6,7 @@ Brython 是一個將 Python 語法編譯為 JavaScript 的工具，能直接在�
 
 README.md 無法直接顯示 Brython 模擬器
 
-因iframe 在 GitHub Markdown 中被限制
+因 iframe 在 GitHub Markdown 中被限制
 
 所以可靠做法是提供 GitHub Pages 網址鏈接
 
